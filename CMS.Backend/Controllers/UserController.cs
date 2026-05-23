@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CMS.DATA.Entities; // Phải có dòng này để dùng lớp User
+using CMS.Data.Entities; // Phải có dòng này để dùng lớp User
 
 namespace CMS.Backend.Controllers
 {

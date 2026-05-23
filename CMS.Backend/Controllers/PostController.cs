@@ -1,4 +1,4 @@
-﻿using CMS.DATA.Entities; // Quan trọng: Phải có dòng này để dùng lớp Post
+﻿using CMS.Data.Entities; // Quan trọng: Phải có dòng này để dùng lớp Post
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMS.Backend.Controllers       
