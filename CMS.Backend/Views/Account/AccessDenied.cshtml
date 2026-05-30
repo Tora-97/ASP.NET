@@ -1,8 +1,46 @@
-﻿@{
+﻿@*@{
     Layout = "_LayoutAdmin";
 }
 <div class="container mt-5 text-center">
     <h1 class="text-danger">403 - KHÔNG CÓ QUYỀN TRUY CẬP</h1>
     <p>Bạn không có đủ quyền hạn để xem trang này. Vui lòng liên hệ quản trị viên.</p>
     <a href="/" class="btn btn-primary">Quay lại trang chủ</a>
+</div>
+*@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "403 - Từ chối truy cập";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow border-0 text-center py-4 px-3" style="border-radius: 1rem;">
+                <div class="card-body">
+
+                    <div class="d-inline-block bg-danger bg-opacity-10 text-danger p-4 rounded-circle mb-4">
+                        <i class="bi bi-shield-slash-fill" style="font-size: 4rem; line-height: 1;"></i>
+                    </div>
+
+                    <h2 class="text-danger fw-bold mb-3">403 - TỪ CHỐI TRUY CẬP</h2>
+                    <p class="text-secondary mb-4 px-2">
+                        Tài khoản của bạn hiện tại <strong>không có đủ quyền hạn</strong> để truy cập hoặc thực hiện thao tác trên trang này. Vui lòng kiểm tra lại hoặc liên hệ quản trị viên hệ thống.
+                    </p>
+
+                    <hr class="text-muted opacity-25 mb-4" />
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <button onclick="window.history.back()" class="btn btn-outline-secondary px-4 fw-semibold">
+                            <i class="bi bi-arrow-left"></i> Quay lại
+                        </button>
+
+                        <a href="/" class="btn btn-danger px-4 fw-semibold shadow-sm">
+                            <i class="bi bi-house-door"></i> Về trang chủ
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

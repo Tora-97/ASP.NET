@@ -1,4 +1,4 @@
-﻿@model CMS.Data.Entities.Category
+﻿@*@model CMS.Data.Entities.Category
 
 <div class="container mt-4">
     <h2 class="text-primary">THÊM DANH MỤC MỚI</h2>
@@ -18,4 +18,50 @@
         <button type="submit" class="btn btn-success">Lưu vào hệ thống</button>
         <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
     </form>
+</div>
+*@
+@model CMS.Data.Entities.Category
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Thêm danh mục mới";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="card shadow-sm border-0" style="border-radius: 0.75rem;">
+                <div class="card-header bg-success text-white py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-folder-plus me-2"></i> THÊM DANH MỤC MỚI</h5>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" autocomplete="off">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">Tên danh mục:</label>
+                            <input asp-for="Name" class="form-control focus-ring" placeholder="Nhập tên danh mục (ví dụ: Tin tức, Đồ án...)" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-secondary">Mô tả ngắn:</label>
+                            <textarea asp-for="Description" class="form-control focus-ring" rows="4" placeholder="Nhập mô tả tóm tắt ý nghĩa danh mục tại đây..."></textarea>
+                        </div>
+
+                        <hr class="text-muted opacity-25 mb-4" />
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-semibold">
+                                <i class="bi bi-x-circle"></i> Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">
+                                <i class="bi bi-cloud-arrow-up"></i> Lưu vào hệ thống
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

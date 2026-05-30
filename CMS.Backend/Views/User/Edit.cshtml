@@ -1,4 +1,4 @@
-﻿@model CMS.Data.Entities.User
+﻿@*@model CMS.Data.Entities.User
 @{
     Layout = "_LayoutAdmin";
 }
@@ -41,6 +41,80 @@
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
                 <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
             </form>
+        </div>
+    </div>
+</div>
+*@
+@model CMS.Data.Entities.User
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Cập nhật thành viên";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+
+            <div class="card shadow-sm border-0" style="border-radius: 0.75rem;">
+                <div class="card-header bg-warning text-dark py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CẬP NHẬT THÔNG TIN THÀNH VIÊN</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Tên đăng nhập:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-lock-fill"></i></span>
+                                    <input asp-for="Username" class="form-control bg-light text-muted" readonly />
+                                </div>
+                                <small class="text-danger-emphasis small d-block mt-1"><i class="bi bi-info-circle"></i> Tên đăng nhập cố định, không được phép chỉnh sửa.</small>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Mật khẩu mới (Nếu có):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-shield-plus"></i></span>
+                                    <input type="password" name="NewPassword" class="form-control" placeholder="Để trống nếu giữ nguyên mật khẩu cũ" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Họ và Tên:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-person-vcard"></i></span>
+                                    <input asp-for="FullName" class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold text-secondary">Vai trò / Quyền hạn:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-shield-check"></i></span>
+                                    <select asp-for="Role" class="form-select" required>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Editor">Editor</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted opacity-25 mb-4" />
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-semibold">
+                                <i class="bi bi-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-warning text-dark px-4 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle"></i> Cập nhật thông tin
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
