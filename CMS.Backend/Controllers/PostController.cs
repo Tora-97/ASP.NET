@@ -1,48 +1,68 @@
 ﻿using CMS.Data.Entities; // Quan trọng: Phải có dòng này để dùng lớp Post
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+// Thay tên 'YourDbContext' bằng tên DbContext thực tế trong dự án CMS.Data của bạn (ví dụ: CMSContext, AppDbContext,...)
+using CMS.Data;
 
-namespace CMS.Backend.Controllers       
+namespace CMS.Backend.Controllers
 {
     public class PostController : Controller
     {
-        // Hàm Index: Hiển thị danh sách bài viết mẫu
-        public IActionResult Index()
-        {
-            // 1. Tạo dữ liệu giả (Mock Data) cho Bài viết
-            var posts = new List<Post>
-            {
-                new Post
-                {
-                    Id = 1,
-                    Title = "Lộ trình học ASP.NET Core cho người mới",
-                    Content = "Nội dung bài viết về lộ trình học .NET...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now
-                },
-                new Post
-                {
-                    Id = 2,
-                    Title = "ReactJS và WebAPI: Xu hướng Fullstack 2026",
-                    Content = "Nội dung bài viết về sự kết hợp React và API...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now.AddDays(-1)
-                },
-                new Post
-                {
-                    Id = 3,
-                    Title = "Hướng dẫn cài đặt môi trường Visual Studio",
-                    Content = "Các bước cài đặt công cụ cần thiết cho lập trình viên...",
-                    ImageUrl = "https://via.placeholder.com/150",
-                    CreatedDate = DateTime.Now.AddDays(-2)
-                }
-            };
+        // 1. Khai báo biến readonly để lưu trữ DbContext
+        private readonly ApplicationDbContext _context;
 
-            // 2. Gửi danh sách dữ liệu sang View
-            return View(posts);
+        // 2. Tạo Constructor để Inject (tiêm) DbContext từ DI Container vào Controller
+        public PostController(ApplicationDbContext context)
+        {
+            _context = context;
         }
 
-        // Hàm Details: Hiển thị chi tiết một bài viết (Bổ sung  khá giỏi)
+        // Hàm Index: Hiển thị danh sách bài viết theo mã danh mục
+        public IActionResult Index(int? id)
+        {
+            // 1. Khởi tạo câu truy vấn nâng cao (Chưa kích hoạt tải dữ liệu)
+            var query = _context.Posts
+                                .Include(p => p.Category)
+                                .OrderByDescending(p => p.CreatedDate);
+
+            // 2. Nếu người dùng có truyền id => Tiến hành lọc theo Chuyên mục
+            if (id != null)
+            {
+                // Ép kiểu ép query chỉ lấy theo CategoryId
+                var postsFiltered = query.Where(p => p.CategoryId == id).ToList();
+                return View(postsFiltered);
+            }
+
+            // 3. Nếu id == null => Lấy toàn bộ bài viết hiển thị ra trang chủ
+            var allPosts = query.ToList();
+            return View(allPosts);
+        }
+
+        // Hàm Details: Hiển thị chi tiết một bài viết
         public IActionResult Details(int id)
+        {
+            // 1. Truy vấn bài viết theo ID
+            // Sử dụng .Include(p => p.Category) để lấy kèm thông tin Danh mục (Join bảng)
+            var post = _context.Posts
+                .Include(p => p.Category)
+                .FirstOrDefault(p => p.Id == id);
+
+            // 2. Kiểm tra nếu không tìm thấy bài viết (tránh lỗi màn hình trắng)
+            if (post == null)
+            {
+                return NotFound(); // Trả về trang lỗi 404
+            }
+
+            // 3. Truyền dữ liệu sang View
+            return View(post);
+        }
+    
+    }
+}
+
+
+// Hàm Details: Hiển thị chi tiết một bài viết (Bổ sung  khá giỏi)
+/* public IActionResult Details(int id)
         {
             // Giả lập tìm bài viết trong Database bằng Id
             // Trong thực tế tuần sau sẽ là: _context.Posts.Find(id);
@@ -61,3 +81,4 @@ namespace CMS.Backend.Controllers
         }
     }
 }
+*/
