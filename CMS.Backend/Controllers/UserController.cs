@@ -1,11 +1,13 @@
 ﻿using CMS.Data; // Đảm bảo có dòng này để trình biên dịch nhận diện ApplicationDbContext
 using CMS.Data.Entities; // Phải có dòng này để dùng lớp User
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize(Roles = "Admin")] // Chỉ tài khoản có Role là Admin mới được phép vào
     public class UserController : Controller
     {
         // 1. KHAI BÁO biến kết nối cơ sở dữ liệu

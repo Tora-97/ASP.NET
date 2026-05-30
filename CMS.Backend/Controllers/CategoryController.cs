@@ -1,10 +1,12 @@
 ﻿using CMS.Data;
 using CMS.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq; // Đảm bảo có dòng này để dùng .ToList()
+using System.Linq;
+using Microsoft.AspNetCore.Authorization; // QUAN TRỌNG: Thêm thư viện này để dùng [Authorize]
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize] // BẮT BUỘC ĐĂNG NHẬP: Người lạ truy cập vào bất kỳ trang nào trong này sẽ bị đá về Login
     public class CategoryController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,7 +18,7 @@ namespace CMS.Backend.Controllers
         }
 
         // ==========================================
-        // BỔ SUNG: Hàm hiển thị danh sách (Index)
+        // Hàm hiển thị danh sách (Index)
         // Đường dẫn: https://localhost:7076/Category
         // ==========================================
         public IActionResult Index()
@@ -48,6 +50,7 @@ namespace CMS.Backend.Controllers
             // Sau khi lưu thành công, tự động quay về trang danh sách (chính là hàm Index ở trên)
             return RedirectToAction("Index");
         }
+        [Authorize(Roles = "Admin")] // Chỉ tài khoản có Role là "Admin" mới được chạy hàm này
         public IActionResult Delete(int id)
         {
             // Bước 1: Tìm đối tượng danh mục trong Database bằng Id
@@ -66,11 +69,12 @@ namespace CMS.Backend.Controllers
             // Sau khi xóa xong, quay lại trang danh sách để cập nhật giao diện
             return RedirectToAction("Index");
         }
+
         // 1. Hàm GET: Tìm dữ liệu cũ và đổ lên Form
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            // Tìm danh mục trong Database theo Id [cite: 348, 350]
+            // Tìm danh mục trong Database theo Id
             var category = _context.Categories.Find(id);
 
             if (category == null) return NotFound();
@@ -85,12 +89,11 @@ namespace CMS.Backend.Controllers
             // Lệnh cập nhật đối tượng vào bộ nhớ tạm
             _context.Categories.Update(model);
 
-            // Lưu thay đổi thực sự xuống SQL Server [cite: 504, 509]
+            // Lưu thay đổi thực sự xuống SQL Server
             _context.SaveChanges();
 
             // Quay lại trang danh sách để xem kết quả
             return RedirectToAction("Index");
         }
-
     }
 }
