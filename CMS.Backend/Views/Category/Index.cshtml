@@ -1,79 +1,41 @@
-﻿@*@model IEnumerable<CMS.Data.Entities.Category>
+﻿@model IEnumerable<CMS.Data.Entities.Category>
 @{
     Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý danh mục bài viết";
 }
-<h2 class="text-primary">DANH SÁCH DANH MỤC (DỮ LIỆU THẬT LẤY TỪ DATABASE)</h2>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên danh mục</th>
-            <th>Mô tả</th>
-            <th style="width:150px">Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-folder2-open text-primary me-2"></i> DANH SÁCH DANH MỤC</h4>
+    <a href="/Category/Create" class="btn btn-primary fw-bold shadow-sm"><i class="bi bi-plus-circle me-1"></i> THÊM MỚI</a>
+</div>
+
+<div class="table-responsive bg-white rounded-3 shadow-sm p-3">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
             <tr>
-                <td>@item.Id</td>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id"
-                       class="btn btn-sm btn-outline-warning">Sửa</a>
-
-                    <a asp-action="Delete" asp-route-id="@item.Id"
-                       class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này?')">Xóa</a>
-                </td>
+                <th width="80">Mã ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả chi tiết</th>
+                <th width="180" class="text-center">Hành động</th>
             </tr>
-        }
-    </tbody>
-</table>
-*@
-@model CMS.Data.Entities.Category
-@{
-    Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Chỉnh sửa danh mục";
-}
-
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
-            
-            <div class="card shadow-sm border-0" style="border-radius: 0.75rem;">
-                <div class="card-header bg-warning text-dark py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA DANH MỤC</h5>
-                </div>
-                
-                <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="Id" />
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Tên danh mục:</label>
-                            <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục..." required />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold text-secondary">Mô tả chi tiết:</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Cập nhật lại mô tả..."></textarea>
-                        </div>
-
-                        <hr class="text-muted opacity-25 mb-4" />
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-semibold">
-                                <i class="bi bi-arrow-left-short"></i> Quay lại
-                            </a>
-                            <button type="submit" class="btn btn-warning text-dark px-4 fw-bold shadow-sm">
-                                <i class="bi bi-check-circle"></i> Cập nhật thay đổi
-                            </button>
-                        </div>
-
-                    </form>
-                </div>
-            </div> </div>
-    </div>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold text-secondary">#@item.Id</td>
+                    <td class="fw-bold text-dark">@item.Name</td>
+                    <td class="text-muted small">@item.Description</td>
+                    <td class="text-center">
+                        <a href="/Category/Edit/@item.Id" class="btn btn-warning btn-sm text-dark fw-semibold me-1">
+                            <i class="bi bi-pencil-square"></i> Sửa
+                        </a>
+                        <a href="/Category/Delete/@item.Id" class="btn btn-danger btn-sm fw-semibold" onclick="return confirm('Bạn chắc chắn muốn xóa danh mục này?')">
+                            <i class="bi bi-trash"></i> Xóa
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

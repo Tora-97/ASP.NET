@@ -1,147 +1,47 @@
-﻿@*@model CMS.Data.Entities.Post
-
+﻿@model CMS.Data.Entities.Post
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Thêm bài viết mới";
+    ViewData["Title"] = "Thêm bài viết";
 }
 
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-file-earmark-plus"></i> THÊM BÀI VIẾT MỚI</h4>
-        </div>
-        <div class="card-body">
-            <form asp-action="Create" method="post">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tiêu đề bài viết:</label>
-                            <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề..." />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nội dung chi tiết:</label>
-                            <textarea asp-for="Content" class="form-control" rows="10" placeholder="Viết nội dung tại đây..."></textarea>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Chuyên mục:</label>
-                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList">
-                                <option value="">-- Chọn danh mục --</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Link ảnh đại diện (URL):</label>
-                            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Ngày đăng:</label>
-                            <input asp-for="CreatedDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                        </div>
-
-                        <hr />
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-cloud-arrow-up"></i> Lưu và Đăng bài
-                            </button>
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-    <script>
-        // 2. Định hình và kích hoạt CKEditor thay thế cho thẻ có selector #Content
-        ClassicEditor
-            .create(document.querySelector('#Content'))
-            .catch(error => {
-                console.error(error);
-            });
-    </script>
-}
-*@
-@model CMS.Data.Entities.Post
-
-@{
-    Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Thêm bài viết mới";
-}
-
-<style>
-    /* Ép độ cao tối thiểu cho trình soạn thảo CKEditor tránh bị lùn quá */
-    .ck-editor__editable_inline {
-        min-height: 300px;
-    }
-</style>
-
-<div class="container mt-4">
-    <div class="card shadow border-0" style="border-radius: 0.75rem;">
-        <div class="card-header bg-primary text-white py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus-fill me-2"></i> THÊM BÀI VIẾT MỚI</h5>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i> THÊM BÀI VIẾT MỚI</h5>
         </div>
         <div class="card-body p-4">
-            <form asp-action="Create" method="post" autocomplete="off">
-                <div class="row g-4">
-                    <div class="col-12 col-lg-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Tiêu đề bài viết:</label>
-                            <input asp-for="Title" class="form-control p-2" placeholder="Nhập tiêu đề bài viết tại đây..." required />
-                        </div>
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Nội dung chi tiết:</label>
-                            <textarea asp-for="Content" class="form-control" rows="10"></textarea>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tiêu đề bài viết:</label>
+                    <input asp-for="Title" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Danh mục bài viết:</label>
+                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required>
+                        <option value="">-- Chọn danh mục --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nội dung bài viết:</label>
+                    <textarea asp-for="Content" class="form-control" rows="6" placeholder="Nhập nội dung chi tiết tại đây..." required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Chọn hình ảnh từ thiết bị:</label>
+                    <input type="file" name="uploadImage" id="imageInput" class="form-control" accept="image/*" />
+
+                    <div class="mt-3">
+                        <label class="small text-muted d-block mb-1">Hình ảnh xem trước:</label>
+                        <img id="imagePreview" src="https://via.placeholder.com/200x120?text=Chua+Chon+Anh"
+                             class="img-thumbnail" style="max-width: 250px; height: auto;" />
                     </div>
+                </div>
 
-                    <div class="col-12 col-lg-4">
-                        <div class="card bg-light border-0 p-3" style="border-radius: 0.5rem;">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Chuyên mục:</label>
-                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required>
-                                    <option value="">-- Chọn danh mục --</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Link ảnh đại diện (URL):</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-image"></i></span>
-                                    <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Ngày đăng cấu hình:</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-calendar-event"></i></span>
-                                    <input asp-for="CreatedDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
-                                </div>
-                            </div>
-
-                            <hr class="opacity-25" />
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success fw-bold py-2 shadow-sm">
-                                    <i class="bi bi-cloud-arrow-up-fill"></i> Lưu và Đăng bài
-                                </button>
-                                <a asp-action="Index" class="btn btn-outline-secondary fw-semibold py-2">
-                                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <hr class="opacity-25" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/Post" class="btn btn-outline-secondary px-4">Quay lại</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Lưu bài viết</button>
                 </div>
             </form>
         </div>
@@ -149,12 +49,14 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>
-        ClassicEditor
-            .create(document.querySelector('#Content'))
-            .catch(error => {
-                console.error(error);
-            });
+        // JS tự động bắt sự kiện chọn file để hiển thị ảnh xem trước ngay lập tức
+        document.getElementById('imageInput').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagePreview');
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+            }
+        });
     </script>
 }

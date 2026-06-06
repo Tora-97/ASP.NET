@@ -41,14 +41,13 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         public IActionResult Create(Category model)
         {
-            // BƯỚC 1: Thêm dữ liệu vào bộ nhớ tạm của Entity Framework
+            if (!ModelState.IsValid)
+            {
+                return View(model); // Chỉ truyền lại đúng đối tượng đang nhập dở
+            }
             _context.Categories.Add(model);
-
-            // BƯỚC 2: Ra lệnh cho hệ thống ghi dữ liệu thật sự vào SQL Server
             _context.SaveChanges();
-
-            // Sau khi lưu thành công, tự động quay về trang danh sách (chính là hàm Index ở trên)
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Admin")] // Chỉ tài khoản có Role là "Admin" mới được chạy hàm này
         public IActionResult Delete(int id)
@@ -70,30 +69,32 @@ namespace CMS.Backend.Controllers
             return RedirectToAction("Index");
         }
 
-        // 1. Hàm GET: Tìm dữ liệu cũ và đổ lên Form
+        // 1. Hàm GET: Tìm đúng 1 danh mục theo ID để đổ lên form sửa
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            // Tìm danh mục trong Database theo Id
+            // ĐÚNG: Dùng .Find(id) để chỉ lôi ra ĐÚNG 1 đối tượng có Id trùng khớp
             var category = _context.Categories.Find(id);
 
-            if (category == null) return NotFound();
+            if (category == null)
+            {
+                return NotFound(); // Trả về 404 nếu không tìm thấy dữ liệu dưới DB
+            }
 
-            return View(category); // Gửi đối tượng tìm được sang giao diện Edit
+            return View(category); // Đổ đúng 1 đối tượng duy nhất sang View Edit.cshtml
         }
 
-        // 2. Hàm POST: Nhận dữ liệu mới từ người dùng và lưu lại
+        // 2. Hàm POST: Nhận lại đúng 1 đối tượng chứa dữ liệu mới từ Form để lưu xuống SQL
         [HttpPost]
         public IActionResult Edit(Category model)
         {
-            // Lệnh cập nhật đối tượng vào bộ nhớ tạm
-            _context.Categories.Update(model);
-
-            // Lưu thay đổi thực sự xuống SQL Server
-            _context.SaveChanges();
-
-            // Quay lại trang danh sách để xem kết quả
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                _context.Categories.Update(model);
+                _context.SaveChanges();
+                return RedirectToAction("Index"); // Lưu xong quay về trang danh sách
+            }
+            return View(model);
         }
     }
 }

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\CategoryController - Copy.cs" />
+    <Compile Remove="Controllers\ProductCategoriesApiController.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
 	  <ProjectReference Include="..\CMS.DATA\CMS.Data.csproj" />
   </ItemGroup>
 

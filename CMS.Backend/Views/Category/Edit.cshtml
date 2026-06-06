@@ -1,70 +1,58 @@
-﻿@*@model CMS.Data.Entities.Category
-
-<div class="container mt-4">
-    <h2 class="text-warning">CHỈNH SỬA DANH MỤC</h2>
-    <hr />
-
-    <form asp-action="Edit" method="post">
-        <input type="hidden" asp-for="Id" />
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">Tên danh mục:</label>
-            <input asp-for="Name" class="form-control" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">Mô tả:</label>
-            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-warning">Cập nhật thay đổi</button>
-        <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
-    </form>
-</div>
-*@
-@model CMS.Data.Entities.Category
+﻿@model CMS.Data.Entities.Post
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Chỉnh sửa danh mục";
+    ViewData["Title"] = "Chỉnh sửa bài viết";
 }
 
 <div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA BÀI VIẾT</h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
 
-            <div class="card shadow-sm border-0" style="border-radius: 0.75rem;">
-                <div class="card-header bg-warning text-dark py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA DANH MỤC</h5>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tiêu đề bài viết:</label>
+                    <input asp-for="Title" class="form-control" required />
                 </div>
 
-                <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="Id" />
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Tên danh mục:</label>
-                            <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục..." required />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold text-secondary">Mô tả chi tiết:</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Cập nhật lại mô tả..."></textarea>
-                        </div>
-
-                        <hr class="text-muted opacity-25 mb-4" />
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Index" class="btn btn-outline-secondary px-4 fw-semibold">
-                                <i class="bi bi-arrow-left-short"></i> Quay lại
-                            </a>
-                            <button type="submit" class="btn btn-warning text-dark px-4 fw-bold shadow-sm">
-                                <i class="bi bi-check-circle"></i> Cập nhật thay đổi
-                            </button>
-                        </div>
-
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Danh mục:</label>
+                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required></select>
                 </div>
-            </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Hình ảnh đại diện (Bấm để thay đổi):</label>
+                    <input type="file" name="uploadImage" id="imageInputEdit" class="form-control" accept="image/*" />
+
+                    <div class="mt-3">
+                        <img id="imagePreviewEdit" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/200x120?text=No+Image" : Model.ImageUrl)"
+                             class="img-thumbnail shadow-sm d-block" style="max-width: 250px; height: auto;" />
+                    </div>
+                    <small class="text-muted d-block mt-1">Nếu không muốn thay đổi ảnh, vui lòng để trống ô chọn file.</small>
+                </div>
+
+                <hr class="opacity-25" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-warning text-dark px-4 fw-bold">Cập nhật thay đổi</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // JavaScript xử lý preview thời gian thực cho trang Edit
+        document.getElementById('imageInputEdit').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagePreviewEdit');
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
+}

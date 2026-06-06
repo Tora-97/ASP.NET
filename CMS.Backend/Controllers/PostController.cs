@@ -1,137 +1,132 @@
-﻿// Thay tên 'YourDbContext' bằng tên DbContext thực tế trong dự án CMS.Data của bạn (ví dụ: CMSContext, AppDbContext,...)
-using CMS.Data;
-using CMS.Data.Entities; // Quan trọng: Phải có dòng này để dùng lớp Post
+﻿using CMS.Data;
+using CMS.Data.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize] // Bắt buộc đăng nhập mới được sờ vào quản lý bài viết
     public class PostController : Controller
     {
-        // 1. Khai báo biến readonly để lưu trữ DbContext
         private readonly ApplicationDbContext _context;
 
-        // 2. Tạo Constructor để Inject (tiêm) DbContext từ DI Container vào Controller
         public PostController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Hàm Index: Hiển thị danh sách bài viết theo mã danh mục
+        // ==========================================
+        // 1. Hàm GET: Hiển thị danh sách bài viết
+        // URL thô: https://localhost:7076/Post
+        // ==========================================
+        [HttpGet]
         public IActionResult Index(int? id)
         {
-            // 1. Khởi tạo câu truy vấn nâng cao (Chưa kích hoạt tải dữ liệu)
             var query = _context.Posts
                                 .Include(p => p.Category)
-                                .OrderByDescending(p => p.CreatedDate);
+                                .OrderByDescending(p => p.Id); // Sắp xếp bài mới lên đầu
 
-            // 2. Nếu người dùng có truyền id => Tiến hành lọc theo Chuyên mục
             if (id != null)
             {
-                // Ép kiểu ép query chỉ lấy theo CategoryId
                 var postsFiltered = query.Where(p => p.CategoryId == id).ToList();
                 return View(postsFiltered);
             }
 
-            // 3. Nếu id == null => Lấy toàn bộ bài viết hiển thị ra trang chủ
             var allPosts = query.ToList();
-            return View(allPosts);
+            return View(allPosts); // Trả về danh sách bài viết cho Views/Post/Index.cshtml
         }
 
-        // Hàm Details: Hiển thị chi tiết một bài viết
-        public IActionResult Details(int id)
-        {
-            // 1. Truy vấn bài viết theo ID
-            // Sử dụng .Include(p => p.Category) để lấy kèm thông tin Danh mục (Join bảng)
-            var post = _context.Posts
-                .Include(p => p.Category)
-                .FirstOrDefault(p => p.Id == id);
-
-            // 2. Kiểm tra nếu không tìm thấy bài viết (tránh lỗi màn hình trắng)
-            if (post == null)
-            {
-                return NotFound(); // Trả về trang lỗi 404
-            }
-
-            // 3. Truyền dữ liệu sang View
-            return View(post);
-        }
-        // 1. Hàm hiển thị form tạo mới bài viết (GET)
+        // ==========================================
+        // 2. Hàm GET: Hiển thị giao diện Form tạo mới
+        // URL thô: https://localhost:7076/Post/Create
+        // ==========================================
         [HttpGet]
         public IActionResult Create()
         {
-            // Chúng ta lấy danh sách Category để đổ vào ViewBag
+            // Bốc danh sách chuyên mục nạp vào ViewBag để ô Chọn (Select) hiển thị tên danh mục
             ViewBag.CategoryList = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
-
-
+        // --- HÀM XỬ LÝ TẠO MỚI (POST) ---
         [HttpPost]
         public IActionResult Create(Post model, IFormFile uploadImage)
         {
+            // BẪY LỖI 1: Nếu người dùng để trống khung nội dung, tự động gán giá trị mặc định để không lỗi SQL
+            if (string.IsNullOrEmpty(model.Content))
+            {
+                model.Content = "Chưa có nội dung cho bài viết này.";
+            }
+
+            // Kiểm tra xem người dùng có bấm chọn file ảnh từ thiết bị không
             if (uploadImage != null && uploadImage.Length > 0)
             {
-                // 1. Định nghĩa đường dẫn lưu file: wwwroot/uploads
+                // Định nghĩa thư mục lưu ảnh: wwwroot/uploads
                 string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-
-                // Tạo thư mục nếu chưa tồn tại
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                // 2. Tạo tên file duy nhất để không bị đè dữ liệu
+                // Tạo tên file ngẫu nhiên (GUID) để không bao giờ bị trùng, ghi đè tên ảnh
                 string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
                 string filePath = Path.Combine(folder, fileName);
 
-                // 3. Chép file vào thư mục
+                // Lưu trực tiếp file ảnh vật lý vào ổ cứng thư mục wwwroot
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     uploadImage.CopyTo(stream);
                 }
 
-                // 4. Lưu đường dẫn vào CSDL để sau này hiển thị
+                // Gán đường dẫn ảo để lưu vào cột ImageUrl dưới SQL Server
                 model.ImageUrl = "/uploads/" + fileName;
+            }
+            else
+            {
+                // Nếu không chọn ảnh, gán chuỗi rỗng thay vì NULL để tránh lỗi DB tùy cấu hình
+                model.ImageUrl = "";
             }
 
             _context.Posts.Add(model);
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-        public IActionResult Delete(int id)
-        {
-            // 1. Tìm bài viết theo Id
-            var post = _context.Posts.Find(id);
 
-            if (post != null)
-            {
-                // 2. Xóa khỏi bộ nhớ tạm
-                _context.Posts.Remove(post);
-
-                // 3. Cập nhật xuống SQL Server
-                _context.SaveChanges();
-            }
-            return RedirectToAction("Index");
-        }
-        // GET: Hiển thị form kèm dữ liệu cũ
+        // ==========================================
+        // 3. Hàm GET: Tìm dữ liệu cũ đổ lên Form sửa
+        // URL thô: https://localhost:7076/Post/Edit/{id}
+        // ==========================================
         [HttpGet]
         public IActionResult Edit(int id)
         {
             var post = _context.Posts.Find(id);
             if (post == null) return NotFound();
 
-            // Chuẩn bị lại danh sách danh mục để người dùng có thể đổi chuyên mục
+            // Giữ lại lựa chọn danh mục cũ của bài viết này
             ViewBag.CategoryList = new SelectList(_context.Categories, "Id", "Name", post.CategoryId);
             return View(post);
         }
 
-        // POST: Thực hiện cập nhật
+        // --- HÀM XỬ LÝ CHỈNH SỬA (POST) ---
         [HttpPost]
         public IActionResult Edit(Post model, IFormFile uploadImage)
         {
-            // Bước 1: Kiểm tra xem người dùng có chọn file ảnh mới không
+            // Lấy dữ liệu bài viết hiện tại trong database để đối chiếu
+            var oldPostData = _context.Posts.AsNoTracking().FirstOrDefault(p => p.Id == model.Id);
+
+            // BẪY LỖI 2: Nếu ô nhập nội dung sửa bị rỗng (hoặc thiếu trên form)
+            if (string.IsNullOrEmpty(model.Content) && oldPostData != null)
+            {
+                // Khôi phục lại nội dung cũ đã lưu trong database
+                model.Content = oldPostData.Content;
+            }
+
             if (uploadImage != null && uploadImage.Length > 0)
             {
-                // Thực hiện quy trình upload giống như trang Create
+                // TRƯỜNG HỢP 1: Người dùng chọn ẢNH MỚI từ thiết bị -> Upload đè lên
                 string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
@@ -143,46 +138,55 @@ namespace CMS.Backend.Controllers
                     uploadImage.CopyTo(stream);
                 }
 
-                // Cập nhật đường dẫn ảnh mới vào model
-                model.ImageUrl = "/uploads/" + fileName;
+                model.ImageUrl = "/uploads/" + fileName; // Lấy đường dẫn ảnh mới
             }
             else
             {
-                // Bước quan trọng: Nếu không upload ảnh mới, chúng ta phải giữ lại ảnh cũ
-                // Chúng ta cần lấy lại giá trị ImageUrl từ Database để tránh bị ghi đè thành rỗng
-                var oldPost = _context.Posts.AsNoTracking().FirstOrDefault(p => p.Id == model.Id);
-                if (oldPost != null && string.IsNullOrEmpty(model.ImageUrl))
+                // TRƯỜNG HỢP 2: Người dùng KHÔNG chọn ảnh mới -> Giữ nguyên ảnh cũ dưới DB
+                if (oldPostData != null)
                 {
-                    model.ImageUrl = oldPost.ImageUrl;
+                    model.ImageUrl = oldPostData.ImageUrl; // Đổ lại đường dẫn ảnh cũ vào model
                 }
             }
+
             _context.Posts.Update(model);
-            _context.SaveChanges();
+            _context.SaveChanges(); // Đã bọc lót an toàn, lưu thành công 100%
             return RedirectToAction("Index");
         }
 
-    }
-}
-
-
-// Hàm Details: Hiển thị chi tiết một bài viết (Bổ sung  khá giỏi)
-/* public IActionResult Details(int id)
+        // ==========================================
+        // 4. Hàm xử lý XÓA bài viết theo ID
+        // ==========================================
+        [Authorize(Roles = "Admin")] // Chỉ admin mới có nút xóa bài
+        public IActionResult Delete(int id)
         {
-            // Giả lập tìm bài viết trong Database bằng Id
-            // Trong thực tế tuần sau sẽ là: _context.Posts.Find(id);
-            var post = new Post
+            var post = _context.Posts.Find(id);
+            if (post != null)
             {
-                Id = id,
-                Title = "Nội dung chi tiết bài viết số " + id,
-                Content = "Đây là nội dung đầy đủ của bài viết mà bạn vừa click vào. Ở đây  có thể viết dài hơn để thấy sự khác biệt với trang danh sách.",
-                ImageUrl = "https://via.placeholder.com/600x300", // Ảnh to hơn
-                CreatedDate = DateTime.Now
-            };
+                _context.Posts.Remove(post);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("Index");
+        }
 
-            if (post == null) return NotFound();
+        // ==========================================
+        // 5. Hàm GET: Hiển thị chi tiết bài viết theo ID
+        // URL thô: https://localhost:7076/Post/Details/{id}
+        // ==========================================
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            // Lấy bài viết kèm theo thông tin Danh mục của bài viết đó
+            var post = _context.Posts
+                               .Include(p => p.Category)
+                               .FirstOrDefault(p => p.Id == id);
 
-            return View(post);
+            if (post == null)
+            {
+                return NotFound(); // Trả về trang 404 nếu không tìm thấy ID bài viết
+            }
+
+            return View(post); // Trả về file giao diện Views/Post/Details.cshtml
         }
     }
 }
-*/

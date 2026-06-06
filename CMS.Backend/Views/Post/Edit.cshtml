@@ -1,147 +1,47 @@
-﻿@*@model CMS.Data.Entities.Post
-
+﻿@model CMS.Data.Entities.Post
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Cập nhật bài viết";
+    ViewData["Title"] = "Chỉnh sửa bài viết";
 }
 
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-warning text-dark">
-            <h4 class="mb-0"><i class="bi bi-pencil-square"></i> CẬP NHẬT BÀI VIẾT</h4>
-        </div>
-        <div class="card-body">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tiêu đề bài viết:</label>
-                            <input asp-for="Title" class="form-control" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nội dung chi tiết:</label>
-                            <textarea asp-for="Content" class="form-control" rows="10"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Chuyên mục:</label>
-                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList">
-                                <option value="">-- Chọn danh mục --</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Link ảnh đại diện (URL):</label>
-                            <input asp-for="ImageUrl" class="form-control" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Ngày đăng:</label>
-                            <input asp-for="CreatedDate" type="date" class="form-control" value="@Model?.CreatedDate.ToString("yyyy-MM-dd")" />
-                        </div>
-
-                        <hr />
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-warning text-dark fw-bold">
-                                <i class="bi bi-cloud-arrow-up"></i> Lưu thay đổi
-                            </button>
-                            <a asp-action="Index" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-    <script>
-        ClassicEditor
-            .create(document.querySelector('#Content'))
-            .catch(error => {
-                console.error(error);
-            });
-    </script>
-}
-*@
-@model CMS.Data.Entities.Post
-
-@{
-    Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Cập nhật bài viết";
-}
-
-<style>
-    .ck-editor__editable_inline {
-        min-height: 300px;
-    }
-</style>
-
-<div class="container mt-4">
-    <div class="card shadow border-0" style="border-radius: 0.75rem;">
-        <div class="card-header bg-warning text-dark py-3" style="border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem;">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CẬP NHẬT BÀI VIẾT</h5>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA BÀI VIẾT</h5>
         </div>
         <div class="card-body p-4">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
 
-                <div class="row g-4">
-                    <div class="col-12 col-lg-8">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Tiêu đề bài viết:</label>
-                            <input asp-for="Title" class="form-control p-2 fw-bold text-dark" required />
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tiêu đề bài viết:</label>
+                    <input asp-for="Title" class="form-control" required />
+                </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold text-secondary">Nội dung chi tiết:</label>
-                            <textarea asp-for="Content" class="form-control" rows="10"></textarea>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Danh mục bài viết:</label>
+                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nội dung bài viết:</label>
+                    <textarea asp-for="Content" class="form-control" rows="6" placeholder="Nhập nội dung chi tiết tại đây..." required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Hình ảnh đại diện (Bấm để thay đổi):</label>
+                    <input type="file" name="uploadImage" id="imageInputEdit" class="form-control" accept="image/*" />
+
+                    <div class="mt-3">
+                        <label class="small text-muted d-block mb-1">Hình ảnh hiện tại của bài viết:</label>
+                        <img id="imagePreviewEdit" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/200x120?text=No+Image" : Model.ImageUrl)"
+                             class="img-thumbnail" style="max-width: 250px; height: auto;" />
                     </div>
+                    <small class="text-danger d-block mt-1"><i class="bi bi-info-circle"></i> Nếu không muốn đổi ảnh cũ, vui lòng để trống ô chọn file này.</small>
+                </div>
 
-                    <div class="col-12 col-lg-4">
-                        <div class="card bg-light border-0 p-3" style="border-radius: 0.5rem;">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Chuyên mục:</label>
-                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required></select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Link ảnh đại diện (URL):</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-image"></i></span>
-                                    <input asp-for="ImageUrl" class="form-control" />
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold text-secondary">Ngày đăng:</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white text-muted"><i class="bi bi-calendar-event"></i></span>
-                                    <input asp-for="CreatedDate" type="date" class="form-control" value="@Model?.CreatedDate.ToString("yyyy-MM-dd")" required />
-                                </div>
-                            </div>
-
-                            <hr class="opacity-25" />
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-warning text-dark fw-bold py-2 shadow-sm">
-                                    <i class="bi bi-check-circle-fill"></i> Lưu các thay đổi
-                                </button>
-                                <a asp-action="Index" class="btn btn-outline-secondary fw-semibold py-2">
-                                    <i class="bi bi-x-circle"></i> Hủy chỉnh sửa
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <hr class="opacity-25" />
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/Post" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-warning text-dark px-4 fw-bold">Cập nhật dữ liệu</button>
                 </div>
             </form>
         </div>
@@ -149,12 +49,14 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>
-        ClassicEditor
-            .create(document.querySelector('#Content'))
-            .catch(error => {
-                console.error(error);
-            });
+        // JS xử lý hiển thị ảnh mới thay thế ảnh cũ ngay trên giao diện Edit
+        document.getElementById('imageInputEdit').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagePreviewEdit');
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+            }
+        });
     </script>
 }

@@ -1,24 +1,46 @@
-﻿@model IEnumerable<CMS.Data.Entities.Post>
+﻿@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Bảng điều khiển";
+}
 
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-danger">TIN TỨC MỚI NHẤT</h2>
-    <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4">
-                <div class="card shadow-sm h-100">
-                    <img src="@item.ImageUrl" class="card-img-top" alt="Thumbnail">
-                    <div class="card-body">
-                        <span class="badge bg-primary mb-2">@item.Category.Name</span>
-                        <h5 class="card-title">@item.Title</h5>
-                        <p class="card-text text-truncate">@item.Content</p>
-                        <a href="/Post/Details/@item.Id" class="btn btn-outline-danger btn-sm">Đọc tiếp</a>
-                    </div>
-                    <div class="card-footer text-muted small">
-                        Ngày đăng: @item.CreatedDate.ToString("dd/MM/yyyy")
-                    </div>
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-primary bg-gradient text-white p-4 rounded-3 shadow-sm d-flex align-items-center justify-content-between">
+                <div>
+                    <h3 class="fw-bold mb-1">Xin chào, @User.FindFirst("FullName")?.Value!</h3>
+                    <p class="mb-0 opacity-75 small">Chào mừng bạn quay trở lại hệ thống quản trị nội dung ThaiCMS.</p>
                 </div>
+                <div class="fs-1 opacity-25"><i class="bi bi-balloon-heart-fill"></i></div>
             </div>
-        }
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted small text-uppercase fw-bold mb-1">Danh mục</h6>
+                        <h4 class="fw-bold mb-0 text-dark">Hệ thống</h4>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-3 fs-4"><i class="bi bi-folder-fill"></i></div>
+                </div>
+                <a href="/Category" class="small text-info text-decoration-none mt-2 d-block fw-semibold">Quản lý ngay &rarr;</a>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-muted small text-uppercase fw-bold mb-1">Bài viết</h6>
+                        <h4 class="fw-bold mb-0 text-dark">Tin tức</h4>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-3 fs-4"><i class="bi bi-file-earmark-text-fill"></i></div>
+                </div>
+                <a href="/Post" class="small text-success text-decoration-none mt-2 d-block fw-semibold">Viết bài mới &rarr;</a>
+            </div>
+        </div>
     </div>
 </div>
