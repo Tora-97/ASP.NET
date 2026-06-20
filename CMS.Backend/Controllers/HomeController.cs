@@ -1,27 +1,52 @@
-﻿
+﻿using CMS.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CMS.Data; // Thư mục chứa DbContext [cite: 568]
 using System.Linq;
 
-public class HomeController : Controller
+namespace CMS.Backend.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public HomeController(ApplicationDbContext context)
+    public class HomeController : Controller
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public IActionResult Index()
-    {
-        // LINQ: Lấy 3 bài viết mới nhất
-        var latestPosts = _context.Posts
-                          .Include(p => p.Category) // Lấy kèm tên danh mục để hiển thị 
-                          .OrderByDescending(p => p.CreatedDate) // Sắp xếp ngày mới nhất lên đầu 
-                          .Take(3) // Chỉ lấy đúng 3 bản tin đầu tiên
-                          .ToList();
+        public HomeController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-        return View(latestPosts);
+        public IActionResult Index()
+        {
+            // 1. Lấy danh sách danh mục sản phẩm để làm bộ lọc
+            var productCategories = _context.CategoriesProducts
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            // 2. Lấy danh sách danh mục bài viết
+            var postCategories = _context.Categories
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            // 3. Lấy 4 sản phẩm mới nhất
+            var latestProducts = _context.Products
+                .Include(p => p.CategoryProduct)
+                .OrderByDescending(p => p.Id)
+                .Take(4)
+                .ToList();
+
+            // 4. Lấy 3 bài viết mới nhất
+            var latestPosts = _context.Posts
+                .Include(p => p.Category)
+                .OrderByDescending(p => p.Id)
+                .Take(3)
+                .ToList();
+
+            // Đẩy tất cả dữ liệu qua ViewBag để View bốc tách
+            ViewBag.ProductCategories = productCategories;
+            ViewBag.PostCategories = postCategories;
+            ViewBag.LatestProducts = latestProducts;
+            ViewBag.LatestPosts = latestPosts;
+
+            return View();
+        }
     }
 }

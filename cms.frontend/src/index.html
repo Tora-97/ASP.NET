@@ -1,25 +1,19 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
+<head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="VibeThread.Fashion - Hệ thống thời trang cao cấp dẫn đầu xu hướng" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibeThread.Fashion - Trang Chủ</title>
+    
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-    <script id="tailwind-config">
+    
+    <script>
         tailwind.config = {
-            darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
+                    colors: {
                         "surface-variant": "#e1e3e4",
                         "surface-container-high": "#e7e8e9",
                         "tertiary-fixed-dim": "#ffb4ab",
@@ -67,47 +61,15 @@
                         "on-secondary-fixed-variant": "#0a4b71",
                         "surface-tint": "#006874",
                         "outline-variant": "#bdc9cb"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.125rem",
-                        "lg": "0.25rem",
-                        "xl": "0.5rem",
-                        "full": "0.75rem"
-                    },
-                    "spacing": {
-                        "stack-sm": "8px",
-                        "margin-mobile": "16px",
-                        "stack-md": "16px",
-                        "section-padding": "64px",
-                        "gutter": "20px",
-                        "stack-lg": "40px",
-                        "container-max": "1200px"
                     }
                 }
             }
         }
     </script>
-
-    <style>
-        body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            min-height: max(884px, 100dvh);
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-
-    <title>VibeThread.Fashion - Trang Chủ</title>
-  </head>
-  <body class="bg-surface text-on-surface w-full overflow-x-hidden min-h-screen">
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+</head>
+<body class="bg-surface text-on-surface w-full overflow-x-hidden min-h-screen">
     
     <div id="root"></div>
 
-  </body>
+</body>
 </html>

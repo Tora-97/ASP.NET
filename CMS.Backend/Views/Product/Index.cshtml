@@ -1,0 +1,32 @@
+﻿@model List<CMS.Data.Entities.Product>
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Danh sách sản phẩm";
+}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4 border-bottom pb-2 fw-bold text-uppercase text-secondary">Tất cả sản phẩm không gian</h1>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    <span class="position-absolute top-0 start-0 badge bg-dark m-2">@item.CategoryProduct?.Name</span>
+                    <img src="@(item.ImageUrl.StartsWith("http") ? item.ImageUrl : "/uploads/" + (string.IsNullOrEmpty(item.ImageUrl) ? "den.jpg" : item.ImageUrl))"
+                         class="card-img-top"
+                         alt="@item.Name"
+                         style="height: 220px; object-fit: cover;">                    <div class="card-body d-flex flex-column text-center">
+                        <h5 class="card-title fw-bold text-truncate">@item.Name</h5>
+                        <p class="card-text text-muted text-truncate">@item.Description</p>
+                        <p class="text-danger fw-bold fs-5 mt-auto mb-3">@String.Format("{0:N0}", item.Price) đ</p>
+                        <a href="/Product/Detail/@item.Id" class="btn btn-primary w-100">Chi Tiết Sản Phẩm</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

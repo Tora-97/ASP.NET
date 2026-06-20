@@ -2,6 +2,22 @@
 @{
     Layout = "_LayoutAdmin";
     ViewData["Title"] = "Chi tiết bài viết";
+
+    // BỘ LỌC XỬ LÝ ẢNH THÔNG MINH 3 LỚP (SỬA TRIỆT ĐỂ LỖI ẨN ẢNH)
+    string currentUrl = (Model.ImageUrl ?? "").Trim();
+    string finalSrc = "/uploads/banner.jpg"; // Ảnh mặc định nếu trống
+
+    if (!string.IsNullOrEmpty(currentUrl))
+    {
+        if (currentUrl.StartsWith("http://") || currentUrl.StartsWith("https://"))
+        {
+            finalSrc = currentUrl; // Nhận link internet trực tiếp
+        }
+        else
+        {
+            finalSrc = "/uploads/" + currentUrl; // Nhận đường dẫn ảnh local
+        }
+    }
 }
 
 <div class="container mt-4">
@@ -15,10 +31,11 @@
             <div class="row g-4">
                 <div class="col-12 col-md-4 text-center border-end border-light">
                     <label class="form-label d-block fw-bold text-secondary text-uppercase small mb-2">Hình ảnh đại diện</label>
-                    <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/350x220?text=No+Image" : Model.ImageUrl)"
+                    <img src="@finalSrc"
                          class="img-fluid rounded-3 shadow-sm border"
                          alt="Ảnh đại diện bài viết"
-                         style="max-height: 250px; object-fit: cover;" />
+                         style="width: 100%; max-height: 250px; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='/uploads/banner.jpg';" />
                 </div>
 
                 <div class="col-12 col-md-8">
@@ -34,13 +51,12 @@
                         </span>
                     </div>
 
-                    @if (Html.ViewData.ModelMetadata.Properties.Any(p => p.PropertyName == "Description"))
-                    {
-                        <div class="mb-3 pt-2 border-top border-light">
-                            <label class="small text-muted fw-semibold d-block text-uppercase">Mô tả tóm tắt:</label>
-                            <p class="text-secondary lh-base">@Html.Raw(Model.GetType().GetProperty("Description")?.GetValue(Model, null))</p>
+                    <div class="mb-3 pt-2 border-top border-light">
+                        <label class="small text-muted fw-semibold d-block text-uppercase">Nội dung bài viết:</label>
+                        <div class="text-secondary lh-base bg-light p-3 rounded-3" style="white-space: pre-line;">
+                            @Model.Content
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
 
