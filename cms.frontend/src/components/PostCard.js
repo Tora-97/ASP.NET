@@ -11,11 +11,10 @@ export default function PostCard({ post }) {
             to={UrlChiTiet}
             className="block bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm border border-outline-variant group hover:shadow-md transition-shadow hover:no-underline"
         >
-            <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300"
-            />
+<img 
+    src={post.image ? `${process.env.REACT_APP_IMAGE_BASE_URL}${post.image}` : '/default-post.png'} 
+    alt={post.title} 
+/>
             <div className="p-5">
                 <span className="text-primary text-label-md font-medium tracking-wider uppercase">{post.category}</span>
                 {/* Đảm bảo tiêu đề không bị gạch chân khi hover vào ô */}

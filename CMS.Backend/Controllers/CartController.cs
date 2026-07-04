@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class CartController : Controller
     {
         private readonly ApplicationDbContext _context;

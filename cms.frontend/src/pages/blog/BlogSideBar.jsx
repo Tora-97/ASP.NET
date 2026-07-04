@@ -1,27 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import categoryService from '../../services/categoryService';
 
-export default function BlogSidebar({ categories = [], activeTab, onTabChange }) {
+export default function BlogSidebar({ activeTab, onTabChange }) {
+    const [categories, setCategories] = useState(["Tất cả"]);
+
+    useEffect(() => {
+        const fetchCats = async () => {
+            try {
+                const res = await categoryService.getAll();
+                // 1. SỬA: Phải lấy res.data từ Axios
+                const data = res.data || res;
+                
+                // 2. SỬA: Lấy c.Name thay vì c.name
+                setCategories(["Tất cả", ...data.map(c => c.Name || c.name)]);
+            } catch (error) {
+                console.error("Lỗi tải danh mục:", error);
+            }
+        };
+        fetchCats();
+    }, []);
+
     return (
-        <aside className="w-full lg:w-64 flex-shrink-0">
-            <div className="sticky top-24 space-y-stack-md bg-surface-container-lowest p-6 rounded-xl border border-outline-variant">
-                <h3 className="font-label-lg text-label-lg text-primary uppercase tracking-wider mb-2 pb-2 border-b border-outline-variant">
-                    Danh Mục Tin Tức
-                </h3>
-                <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => onTabChange(cat)}
-                            className={`px-4 py-2 text-left text-body-md rounded-lg transition-all whitespace-nowrap w-full text-left ${activeTab === cat
-                                    ? "bg-primary-container text-on-primary-container font-bold"
-                                    : "text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </nav>
-            </div>
+        <aside className="w-full lg:w-64">
+            <h4 className="font-bold mb-4">Danh mục</h4>
+            {categories.map(cat => (
+                <button 
+                    key={cat}
+                    className={`block w-full text-left p-2 ${activeTab === cat ? 'text-primary font-bold' : ''}`}
+                    onClick={() => onTabChange(cat)}
+                >
+                    {cat}
+                </button>
+            ))}
         </aside>
     );
 }

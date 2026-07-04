@@ -1,181 +1,146 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // 1. Bắt buộc import Link
-import { useContext } from 'react';
-import { CartContext } from '../../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import productService from '../../services/productService'; // Đảm bảo đã import service này
 
-export default function ProductInfo({ product, id }) {
-    // Quản lý trạng thái tương tác của người dùng
+export default function ProductInfo({ product }) {
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
+
+    // Khởi tạo các state
     const [activeSize, setActiveSize] = useState('M');
-    const [activeColor, setActiveColor] = useState('#006874');
+    const [activeColor, setActiveColor] = useState('Xanh Navy');
+    const [quantity, setQuantity] = useState(1);
+    const [cartStatus, setCartStatus] = useState('idle');
+    const [isLoading, setIsLoading] = useState(false); // Dùng cho nút Mua ngay
 
-    // Trạng thái nút Thêm vào giỏ hàng
-    const [cartStatus, setCartStatus] = useState('idle'); // idle | loading | success
-    const { addToCart } = useContext(CartContext);
-    const {
-        title = "Áo Sơ Mi Linen Teal",
-        price = 850000,
-        originalPrice = 1150000,
-        desc = "Dòng sản phẩm Linen cao cấp từ VibeThread mang đến sự kết hợp hoàn hảo giữa vẻ đẹp mộc mạc và sự sang trọng hiện đại. Chất liệu vải được dệt từ sợi lanh tự nhiên 100%, đảm bảo độ thoáng mát tối đa cho khí hậu nhiệt đới."
-    } = product;
+    // Phá gói dữ liệu từ API
+    const id = product.Id || product.id;
+    const name = product.Name || product.name || "Sản phẩm";
+    const price = product.Price || product.price || 0;
+    const description = product.Description || product.description || "Đang cập nhật mô tả...";
+    const image = product.ImageUrl || product.imageUrl || product.Image || product.image || "";
 
-    const colors = ['#006874', '#0D4C73', '#EEEEEE', '#2e3132'];
-    const sizes = ['S', 'M', 'L', 'XL'];
+    const colors = ['Xanh Navy', 'Đen Tuyền', 'Xám Khói', 'Be Sáng'];
+    const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
 
-    // Xử lý hiệu ứng thêm vào giỏ hàng
+    const getImageUrl = (imgStr) => {
+        if (!imgStr) return '/default.jpg';
+        if (imgStr.startsWith('http')) return imgStr;
+        const baseUrl = process.env.REACT_APP_IMAGE_BASE_URL || 'https://localhost:7076';
+        const cleanImgStr = imgStr.replace(/^\/?uploads\//, ''); 
+        return `${baseUrl}/uploads/${cleanImgStr}`;
+    };
+
+    const handleUpdateQuantity = (delta) => {
+        const newQty = quantity + delta;
+        if (newQty >= 1) setQuantity(newQty);
+    };
+
+    const createCartPayload = () => ({
+        id: id,
+        title: name,
+        price: price,
+        image: getImageUrl(image),
+        quantity: quantity,
+        color: activeColor,
+        size: activeSize
+    });
+
     const handleAddToCart = () => {
         setCartStatus('loading');
         setTimeout(() => {
+            addToCart(createCartPayload());
             setCartStatus('success');
-            addToCart(1); // <--- THÊM DÒNG NÀY ĐỂ TĂNG 1 SẢN PHẨM TRÊN HEADER
-            setTimeout(() => {
-                setCartStatus('idle');
-            }, 2000);
-        }, 1000);
+            setTimeout(() => setCartStatus('idle'), 2000);
+        }, 500);
     };
 
+    // Hàm Mua ngay hoàn chỉnh (đã gộp logic kiểm tra tồn kho)
+const handleBuyNow = async () => {
+    setIsLoading(true);
+    try {
+        // Gọi hàm mới vừa tạo ở bước 1
+        const productData = await productService.getProductById(id);
+        
+        // Kiểm tra an toàn cho thuộc tính số lượng (Stock)
+        const currentStock = productData?.StockQuantity ?? productData?.stockQuantity ?? 0;
+
+        if (currentStock < quantity) {
+            alert(`Sản phẩm hiện chỉ còn ${currentStock} chiếc trong kho.`);
+            setIsLoading(false);
+            return;
+        }
+
+        addToCart(createCartPayload());
+
+        const user = localStorage.getItem('user');
+        if (user) {
+            navigate('/checkout');
+        } else {
+            navigate('/cart');
+        }
+    } catch (err) {
+        console.error("Lỗi:", err);
+        alert("Không thể kiểm tra tồn kho. Vui lòng kiểm tra lại kết nối Backend!");
+    } finally {
+        setIsLoading(false);
+    }
+};
     return (
-        <div className="w-full md:w-1/2 flex flex-col gap-1 pb-24 md:pb-0">
-            {/* Title & Price */}
-            <div className="flex justify-between items-start">
-                <h2 className="font-headline-lg text-headline-lg text-on-surface-variant max-w-[70%]">
-                    {title}
-                </h2>
-                <div className="flex flex-col items-end">
-                    <span className="font-headline-md text-headline-md text-primary font-bold">
-                        {price.toLocaleString('vi-VN')}đ
-                    </span>
-                    {originalPrice && (
-                        <span className="font-label-md text-label-md text-outline line-through">
-                            {originalPrice.toLocaleString('vi-VN')}đ
-                        </span>
-                    )}
-                </div>
+        <div className="w-full md:w-1/2 flex flex-col gap-6 pb-24 md:pb-0">
+            <div>
+                <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2 leading-tight">{name}</h1>
+                <span className="font-headline-xl text-headline-xl text-primary font-bold">
+                    {price.toLocaleString('vi-VN')}đ
+                </span>
             </div>
 
-            {/* Rating */}
-            <div className="flex items-center gap-1 mt-1 mb-4">
-                {[1, 2, 3, 4].map(star => (
-                    <span key={star} className="material-symbols-outlined text-tertiary text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                ))}
-                <span className="material-symbols-outlined text-outline text-[18px]" style={{ fontVariationSettings: "'FILL' 0" }}>star_half</span>
-                <span className="ml-2 font-label-md text-label-md text-outline">(42 đánh giá)</span>
-            </div>
-
-            {/* Color Selection */}
-            <div className="mt-stack-md">
-                <h3 className="font-label-lg text-label-lg text-on-surface mb-3 uppercase tracking-tight">
-                    Màu sắc: <span className="font-normal text-outline">Đang chọn</span>
-                </h3>
-                <div className="flex gap-4">
-                    {colors.map((color, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setActiveColor(color)}
-                            className={`w-10 h-10 rounded-full border border-outline-variant transition-all ${activeColor === color ? 'outline outline-2 outline-primary outline-offset-2' : ''}`}
-                            style={{ backgroundColor: color }}
-                        />
+            <div className="border-t border-outline-variant pt-4">
+                <span className="font-label-lg text-on-surface mb-2 block">Màu sắc</span>
+                <div className="flex flex-wrap gap-3">
+                    {colors.map(color => (
+                        <button key={color} onClick={() => setActiveColor(color)}
+                            className={`px-4 py-2 border rounded-md font-label-md transition-all ${activeColor === color ? 'border-primary bg-primary-container text-on-primary-container font-bold' : 'border-outline-variant hover:border-primary'}`}>
+                            {color}
+                        </button>
                     ))}
                 </div>
             </div>
 
-            {/* Size Selection */}
-            <div className="mt-stack-md">
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-label-lg text-label-lg text-on-surface uppercase tracking-tight">Kích thước</h3>
-                    <button className="text-primary font-label-md text-label-md underline hover:opacity-80">Hướng dẫn chọn size</button>
-                </div>
-                <div className="grid grid-cols-4 gap-3">
+            <div className="border-t border-outline-variant pt-4">
+                <span className="font-label-lg text-on-surface mb-2 block">Kích thước</span>
+                <div className="flex flex-wrap gap-3">
                     {sizes.map(size => (
-                        <button
-                            key={size}
-                            onClick={() => setActiveSize(size)}
-                            className={`py-3 border rounded-lg font-label-lg text-label-lg flex items-center justify-center transition-all ${activeSize === size
-                                ? 'border-primary bg-primary-container text-on-primary-container font-bold'
-                                : 'border-outline-variant text-on-surface hover:border-primary'
-                                }`}
-                        >
+                        <button key={size} onClick={() => setActiveSize(size)}
+                            className={`w-12 h-12 flex items-center justify-center border rounded-md font-label-md transition-all ${activeSize === size ? 'border-primary bg-primary text-white font-bold' : 'border-outline-variant hover:border-primary'}`}>
                             {size}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Product Description */}
-            <div className="mt-stack-lg border-t border-outline-variant pt-6">
-                <h3 className="font-headline-md text-headline-md text-on-surface mb-4">Chi tiết sản phẩm</h3>
-                <div className="flex flex-col gap-4 text-on-surface-variant font-body-md text-body-md leading-relaxed">
-                    <p>{desc}</p>
-                    <ul className="flex flex-col gap-2 list-none p-0">
-                        <li className="flex items-start gap-3">
-                            <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                            <span>Chất liệu Linen tưng cao cấp, ít nhăn và giữ form tốt.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                            <span>Thiết kế vạt ngang, cổ sơ mi truyền thống tinh tế.</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                            <span>Đường may tỉ mỉ theo tiêu chuẩn xuất khẩu.</span>
-                        </li>
-                    </ul>
+            <div className="border-t border-outline-variant pt-4">
+                <span className="font-label-lg text-on-surface block mb-2">Số lượng</span>
+                <div className="inline-flex items-center border border-outline-variant rounded-lg h-12 w-32">
+                    <button onClick={() => handleUpdateQuantity(-1)} className="flex-1 h-full hover:bg-surface-container rounded-l-lg"><span className="material-symbols-outlined">remove</span></button>
+                    <span className="flex-1 text-center font-bold">{quantity}</span>
+                    <button onClick={() => handleUpdateQuantity(1)} className="flex-1 h-full hover:bg-surface-container rounded-r-lg"><span className="material-symbols-outlined">add</span></button>
                 </div>
             </div>
 
-            {/* Shipping Info */}
-            <div className="mt-stack-md bg-surface-container-low rounded-xl p-4 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                    <span className="material-symbols-outlined text-secondary">local_shipping</span>
-                    <div>
-                        <p className="font-label-lg text-label-lg text-on-surface">Miễn phí vận chuyển</p>
-                        <p className="font-label-md text-label-md text-outline">Cho đơn hàng từ 500.000đ</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span className="material-symbols-outlined text-secondary">replay</span>
-                    <div>
-                        <p className="font-label-lg text-label-lg text-on-surface">Đổi trả trong 7 ngày</p>
-                        <p className="font-label-md text-label-md text-outline">Nếu sản phẩm không vừa hoặc lỗi</p>
-                    </div>
-                </div>
+            <div className="flex gap-4 mt-4">
+                <button onClick={handleAddToCart} disabled={cartStatus !== 'idle'} className={`flex-1 h-14 rounded-lg font-label-lg transition-all ${cartStatus === 'success' ? 'bg-secondary text-white' : 'bg-transparent border-2 border-primary text-primary hover:bg-primary-container'}`}>
+                    {cartStatus === 'idle' ? 'Thêm vào giỏ' : cartStatus === 'loading' ? 'Đang xử lý...' : 'Đã thêm!'}
+                </button>
+                <button onClick={handleBuyNow} disabled={isLoading} className="flex-1 h-14 bg-primary text-white rounded-lg font-label-lg hover:bg-opacity-90 flex items-center justify-center gap-2">
+                    {isLoading ? 'Đang kiểm tra...' : 'Mua ngay'}
+                </button>
             </div>
 
-            {/* Sticky Bottom Action Bar (Mobile + Desktop integrated) */}
-            <div className="fixed bottom-0 left-0 w-full md:relative md:mt-8 bg-surface-container-lowest md:bg-transparent p-margin-mobile md:p-0 border-t border-outline-variant md:border-none z-50 md:z-auto shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-none">
-                <div className="flex gap-2 sm:gap-3 max-w-container-max mx-auto">
-                    {/* Nút Chat */}
-                    <button className="w-12 sm:w-14 h-12 sm:h-14 shrink-0 flex items-center justify-center border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors">
-                        <span className="material-symbols-outlined">chat_bubble</span>
-                    </button>
-
-                    {/* Nút Thêm vào giỏ hàng */}
-                    <button
-                        onClick={handleAddToCart}
-                        disabled={cartStatus !== 'idle'}
-                        className={`flex-1 h-12 sm:h-14 rounded-lg font-headline-md text-label-lg sm:text-headline-md flex items-center justify-center gap-1 sm:gap-2 active:scale-95 transition-all duration-300 ${cartStatus === 'success'
-                            ? 'bg-secondary text-on-secondary'
-                            : 'bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary'
-                            }`}
-                    >
-                        {cartStatus === 'idle' && (
-                            <><span className="material-symbols-outlined text-[18px] sm:text-[24px]">add_shopping_cart</span> Thêm vào giỏ</>
-                        )}
-                        {cartStatus === 'loading' && (
-                            <><span className="material-symbols-outlined animate-spin text-[18px] sm:text-[24px]">sync</span> Đang xử lý</>
-                        )}
-                        {cartStatus === 'success' && (
-                            <><span className="material-symbols-outlined text-[18px] sm:text-[24px]">check_circle</span> Đã thêm</>
-                        )}
-                    </button>
-
-                    {/* 2. NÚT MUA NGAY (Link sang /cart) */}
-                    <Link
-                        to="/cart"
-                        className="flex-1 h-12 sm:h-14 rounded-lg bg-secondary text-on-secondary font-headline-md text-label-lg sm:text-headline-md flex items-center justify-center hover:opacity-90 active:scale-95 transition-all duration-300"
-                    >
-                        Mua ngay
-                    </Link>
-                </div>
+            <div className="mt-8 border-t border-outline-variant pt-6">
+                <h3 className="font-headline-md text-headline-md mb-4">Mô tả sản phẩm</h3>
+                <div className="text-on-surface-variant font-body-md" dangerouslySetInnerHTML={{ __html: description }} />
             </div>
         </div>
     );

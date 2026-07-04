@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     // Trang quản lý danh mục sản phẩm bên Admin
     public class CategoryProductController : Controller
     {

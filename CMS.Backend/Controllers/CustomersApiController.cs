@@ -2,12 +2,13 @@
 using CMS.Data;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using CMS.Data.Entities; // Thêm dòng này để gọi được Model Customer
 
 namespace CMS.Backend.Controllers
 {
     [Route("api/customers")]
     [ApiController]
-    [AllowAnonymous] // Cho phép ReactJS hoặc Swagger gọi công khai lấy danh sách khách hàng
+    [AllowAnonymous] // Cho phép ReactJS gọi công khai
     public class CustomersApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +20,6 @@ namespace CMS.Backend.Controllers
 
         // ==========================================
         // 1. API LẤY TOÀN BỘ DANH SÁCH KHÁCH HÀNG
-        // URL: GET https://localhost:7076/api/customers/get-all
         // ==========================================
         [HttpGet("get-all")]
         public IActionResult GetAll()
@@ -28,11 +28,10 @@ namespace CMS.Backend.Controllers
                 .OrderByDescending(c => c.Id)
                 .Select(c => new {
                     c.Id,
-                    FullName = c.FullName, // ĐÃ SỬA: Gọi đúng thuộc tính c.FullName theo Model của bạn
+                    FullName = c.FullName,
                     c.Email,
-                    Phone = c.Phone ?? "", // Bọc lót nếu trống thì trả về chuỗi rỗng thay vì null
+                    Phone = c.Phone ?? "",
                     Address = c.Address ?? ""
-                    // Tuyệt đối không Select trường Password để đảm bảo an toàn an ninh dữ liệu
                 })
                 .ToList();
 
@@ -40,8 +39,7 @@ namespace CMS.Backend.Controllers
         }
 
         // ==========================================
-        // 2. API LẤY CHI TIẾT 1 KHÁCH HÀNG THEO ID
-        // URL: GET https://localhost:7076/api/customers/detail/{id}
+        // 2. API LẤY CHI TIẾT 1 KHÁCH HÀNG
         // ==========================================
         [HttpGet("detail/{id}")]
         public IActionResult GetDetail(int id)
@@ -56,11 +54,67 @@ namespace CMS.Backend.Controllers
             return Ok(new
             {
                 customer.Id,
-                FullName = customer.FullName, // ĐÃ SỬA: Đồng bộ đúng customer.FullName
+                FullName = customer.FullName,
                 customer.Email,
                 Phone = customer.Phone ?? "",
                 Address = customer.Address ?? ""
             });
         }
+
+        // ==========================================
+        // 3. API ĐĂNG KÝ TÀI KHOẢN
+        // ==========================================
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] Customer customer)
+        {
+            // Kiểm tra xem Email đã tồn tại chưa
+            var emailExists = _context.Customers.Any(c => c.Email == customer.Email);
+            if (emailExists)
+            {
+                return BadRequest(new { message = "Email này đã được sử dụng. Vui lòng chọn Email khác!" });
+            }
+
+            // Thêm khách hàng mới
+            _context.Customers.Add(customer);
+            _context.SaveChanges();
+
+            return Ok(new { message = "Đăng ký tài khoản thành công!" });
+        }
+
+        // ==========================================
+        // 4. API ĐĂNG NHẬP
+        // ==========================================
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginRequest request)
+        {
+            // Tìm user khớp cả Email và Password
+            var user = _context.Customers.FirstOrDefault(c => c.Email == request.Email && c.Password == request.Password);
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "Email hoặc mật khẩu không chính xác!" });
+            }
+
+            // Trả về thông tin user (Tuyệt đối KHÔNG trả về Password)
+            return Ok(new
+            {
+                message = "Đăng nhập thành công!",
+                user = new
+                {
+                    user.Id,
+                    user.FullName,
+                    user.Email,
+                    Phone = user.Phone ?? "",
+                    Address = user.Address ?? ""
+                }
+            });
+        }
+    }
+
+    // Class phụ để hứng dữ liệu Đăng nhập từ React
+    public class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }

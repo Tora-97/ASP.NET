@@ -4,72 +4,52 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ====================================================================
-// 1. CẤU HÌNH CÁC DỊCH VỤ (SERVICES CONTAINER)
-// ====================================================================
+// Cấu hình CORS (Tiêu chí 22)
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowReactApp", policy =>
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
+    .AddCookie(options => {
         options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// CẤU HÌNH SWAGGER THÔNG MINH - SỬA LỖI RENDER DEFINITION
+builder.Services.AddControllers().AddJsonOptions(x =>
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+
+builder.Services.AddSession();
+
+// ==========================================
+// THÊM 2 DÒNG NÀY ĐỂ KÍCH HOẠT DỊCH VỤ SWAGGER
+// ==========================================
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
-    {
-        Title = "ThaiCMS API Quản Trị",
-        Version = "v1"
-    });
+builder.Services.AddSwaggerGen();
 
-    c.DocInclusionPredicate((docName, apiDesc) => { return true; });
-    c.CustomSchemaIds(type => type.ToString());
-});
-builder.Services.AddSession(options => {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Giỏ hàng tự hủy sau 30 phút rời web
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddSwaggerGenNewtonsoftSupport();
+
 var app = builder.Build();
 
-// ====================================================================
-// 2. CẤU HÌNH ĐƯỜNG ỐNG XỬ LÝ REQUEST (HTTP REQUEST PIPELINE)
-// ====================================================================
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-app.UseSession();
-// BẬT MIDDLEWARE SWAGGER
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ThaiCMS API v1");
-    c.RoutePrefix = "swagger"; // Mở web tự động chạy thẳng vào Swagger
-});
-
+app.UseCors("AllowReactApp"); // Áp dụng CORS
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+// Hiển thị giao diện Swagger
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(); // Nếu muốn đổi đường dẫn mặc định thành thẳng localhost:7076 thì thêm options.SwaggerEndpoint(...) vào đây
+}
+
+app.MapControllers(); // Map API
+app.MapControllerRoute(name: "default", pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

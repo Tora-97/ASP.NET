@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization; // QUAN TRỌNG: Thêm thư viện nà
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize] // BẮT BUỘC ĐĂNG NHẬP: Người lạ truy cập vào bất kỳ trang nào trong này sẽ bị đá về Login
     public class CategoryController : Controller
     {
@@ -96,5 +97,6 @@ namespace CMS.Backend.Controllers
             }
             return View(model);
         }
+
     }
 }

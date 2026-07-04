@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize] // Bắt buộc đăng nhập mới được sờ vào quản lý bài viết
     public class PostController : Controller
     {
@@ -187,6 +188,31 @@ namespace CMS.Backend.Controllers
             }
 
             return View(post); // Trả về file giao diện Views/Post/Details.cshtml
+        }
+        [HttpPost]
+        public IActionResult UploadImage(IFormFile upload)
+        {
+            if (upload != null && upload.Length > 0)
+            {
+                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(upload.FileName);
+                string filePath = Path.Combine(folder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    upload.CopyTo(stream);
+                }
+
+                // Trả về JSON theo đúng format CKEditor yêu cầu
+                return Json(new
+                {
+                    uploaded = true,
+                    url = "/uploads/" + fileName
+                });
+            }
+            return Json(new { uploaded = false, error = new { message = "Upload failed" } });
         }
     }
 }

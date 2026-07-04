@@ -1,39 +1,25 @@
-﻿@model CMS.Data.Entities.Post
+﻿@model CMS.Data.Entities.Category
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Chỉnh sửa bài viết";
+    ViewData["Title"] = "Chỉnh sửa danh mục";
 }
 
 <div class="container mt-4">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-warning text-dark py-3">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA BÀI VIẾT</h5>
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> CHỈNH SỬA DANH MỤC</h5>
         </div>
         <div class="card-body p-4">
-            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <form asp-action="Edit" method="post">
                 <input type="hidden" asp-for="Id" />
-
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Tiêu đề bài viết:</label>
-                    <input asp-for="Title" class="form-control" required />
+                    <label class="form-label fw-semibold">Tên danh mục:</label>
+                    <input asp-for="Name" class="form-control" required />
                 </div>
-
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Danh mục:</label>
-                    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryList" required></select>
+                    <label class="form-label fw-semibold">Mô tả:</label>
+                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Hình ảnh đại diện (Bấm để thay đổi):</label>
-                    <input type="file" name="uploadImage" id="imageInputEdit" class="form-control" accept="image/*" />
-
-                    <div class="mt-3">
-                        <img id="imagePreviewEdit" src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/200x120?text=No+Image" : Model.ImageUrl)"
-                             class="img-thumbnail shadow-sm d-block" style="max-width: 250px; height: auto;" />
-                    </div>
-                    <small class="text-muted d-block mt-1">Nếu không muốn thay đổi ảnh, vui lòng để trống ô chọn file.</small>
-                </div>
-
                 <hr class="opacity-25" />
                 <div class="d-flex justify-content-end gap-2">
                     <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
@@ -43,16 +29,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // JavaScript xử lý preview thời gian thực cho trang Edit
-        document.getElementById('imageInputEdit').addEventListener('change', function (e) {
-            const preview = document.getElementById('imagePreviewEdit');
-            const file = e.target.files[0];
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-            }
-        });
-    </script>
-}

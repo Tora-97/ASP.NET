@@ -1,51 +1,162 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import productService from '../../services/productService';
+import categoryService from '../../services/categoryService';
 import HeroBanner from './HeroBanner';
 import CategoryMenu from './CategoryMenu';
 import ProductGrid from './ProductGrid';
 import LatestBlog from './LatestBlog';
-
-// Cập nhật lại thuộc tính 'category' cho Mock Data sản phẩm
-const mockProducts = [
-    { id: 1, category: "Vest & Âu phục nam", title: "Áo sơ mi dài tay Oxford Premium", price: 999000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBUCm-zQ_HI_nFk_odID-unm5KdU3wlXdmegknJec26_txcvbXkNFghsX0wXzWNETHC7HXSbzLI6x0Riom0vHXtwaTBXKOZTpDpgd18eoGmxysuVKT_xR6FUXanx_JIsbueA8b3fCrynfFIQYV2_MHOx_c-l6wOkomNRwkYScEi4e4U3FCfhmJR_7pcKX4CoZGM6S7mwU0y51ayscaZwJS46HkpOhBugLF28qk1DYziaFLxBpmWP9jQ6JE49aUowvSVbnP1tydpcxzR", label: "Bán chạy / Còn 4 chiếc", isAvailable: true },
-    { id: 2, category: "Thời trang công sở nữ", title: "Áo Sơ Mi Nam Business Knit", price: 999000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCh1OucL-E1jLUXthISjVwVjNhjPBo18RNFr8ZSun0ELsnL5d5a8cessu0I1thW6cSeJ_9h36VyIUNVWzGaLj-05mFQWgVS03EIcr68rwkwfW4dAkgqfHXEcchtSa73QvXPWNyY6xBZ8nZMGOiQb-wfDhCEEhBPFE24jV2-_1h5LE-kAJaePyCTpQb_p-FhFaWZijmxoWwnr5MBzdjtDMwQ8Pr60_QamuX1hJzoX9BW6waRCJuWeH7vsxqNQeiOicY3LymKK7jqlagO", label: null, isAvailable: true },
-    { id: 3, category: "Trang phục nữ mặc ở nhà", title: "Áo hai dây nữ màu nâu thuần", price: 999000, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAYR6tSQ2BFcf51-Du0nm2rjYw531Ivceddghlg3g_T-7CX8hML5QsI8O1vmI-7bm0lLNqoiGgfwuIUtbcy9lzeXxqD5DVsKS6gYe4uLtw1yWBaqG9k0-UDpVOk0cZQ22xzgMlSyDneZcTuXrkGEeLsi5M0D3ffSL739vZXcIHtMTAycYBUknP-au8HVLgM8J7GWoR385LJZjKVvdN9Z6Gpa3lFbeEnHCGUkMi0NSXTGFqAyLGnMI_rVDrrpbrc9TIV11calpo55IZy", label: null, isAvailable: true },
-    { id: 4, category: "Đầm dạ hội quý phái", title: "Áo hai dây nữ màu vàng tươi", price: 0, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBkVcSnC-Ip12yeZT3jd2WXluq6Ab5cyJICqmuF2oxDSs9p4Ay-taTQg_yNnTTEeU-spCvY663xhTtk0ydTOXLhcQ0vV0RCV39NWR6dX5NQ5xoD04hhvDGVEK3VnBhu_w_axSjvsvAOJPlbQxUGzKy236steaCUZb4O-0PBb5hpap_AxQ35tx_rQvuAvgySzyo2P4IHxuFmalVgDQwRVQC3o6RnPzzDMCprWxfJ1-XAQTToi_JPHlqP5PRDGydKGpBzVKAGez5uAS-A", label: "Bán chạy / Hết hàng", isAvailable: false }
-];
-
-const mockPosts = [
-    { id: 1, title: "Phong cách áo đầm đẹp cho mùa lễ hội", date: "2/6/2026", excerpt: "Khám phá bí quyết lựa chọn trang phục phù hợp với vóc dáng để luôn tự tin tỏa sáng...", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB139OiHKhP7xDdP3gQlNJR_q6h9sAmQrkwjLXrJWGlTE25x0uJgBUygKSaI4gYwPI0OIMtC5_XDSV4ogXHrEGsyAp6LbPsfCHVrY-M-czgWKvsLTD3mTp9FDAGmOTEVawdujiUPdg2cECD6j0yobytAf7Xqn_tKRcjjUinmmZpF4Do1W9nme5_hL-D1NvYcHWYvvhkzfNJEBGEShcDcj_K-7C6jVXDuDtdP1CuRxHueEzAqydyU03fW8tFULPRFM8UF6OWnfyIqms_" },
-    { id: 2, title: "Tips chọn váy trắng 'hack dáng' từ A đến Z cho mọi quý cô công sở", date: "1/6/2026", excerpt: "Khám phá bí quyết lựa chọn trang phục phù hợp với vóc dáng để luôn tự tin tỏa sáng...", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuClcGmg9z6Y4P7NYUF2Tv4kQ0PTH2BuX9TZ4wIozVoIA8I4H2nyWot_yGKGWj7IsK9_IERhUzbYPXIYF0PJZsOfm_xhth60S4OCy5LIS_gt0Q3aAh19o4oMkCK6FScHdKISdecJ1VcTYLed9abfvCLquuE7dZOCQy5-XqCMRscYYmq-bZiaSCRl_4BR9UjXvsoFP0um1727eZAQPZXt6jzARZYodA_EB06Y9CfdgHXNZ6xThY_Kt3r5yywldNNG14gXbdIoA4SZU79v" },
-    { id: 3, title: "Top 7 kiểu áo sơ mi sang chảnh tôn dáng cho quý cô công sở 2026", date: "2/6/2026", excerpt: "Khám phá bí quyết lựa chọn trang phục phù hợp với vóc dáng để luôn tự tin tỏa sáng...", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC8LnNCKQz9RuXf6baZzQdho5H1Fve9njZnWBb1z9WiNn1Jfy_FnV58u2bbT_wZkiXbexI9a2TL0ecedgQXu8Eo564PPf16zk-_QhZOYsa0AflxE169YHnMHmpa3vGr4gwgCGHy4gsvY7w7-yyrme_v5D5wEG3etq7VI8eXy46aNlO_VAFPGGlKONHHwxPiu0GEf4HLxDYDb-apyayxmMJBdzMn-dW29Lo1a8ZX4-0PAMUaLmWM-Q8S9TyLwfMYKsNKtEjrxv1MWbLz" }
-];
+import postService from '../../services/postService';
 
 export default function Home() {
-    // 1. Quản lý danh mục đang được chọn (Mặc định là "Tất cả")
+    const [products, setProducts] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [activeCategory, setActiveCategory] = useState("Tất cả");
 
-    // 2. Logic lọc danh sách sản phẩm dựa trên danh mục đang chọn
+    // --- LOGIC PHÂN TRANG ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+    
+    // Hàm xử lý khi đổi danh mục: Bắt buộc reset về trang 1
+    const handleCategoryChange = (category) => {
+        setActiveCategory(category);
+        setCurrentPage(1);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            // 1. Lấy sản phẩm và tự động gán ảnh từ internet
+            try {
+                const productsData = await productService.getAllProducts();
+
+                const optimizedProducts = productsData.map((product) => {
+                    const id = product.Id || product.id || 1;
+                    return {
+                        ...product,
+                        image: product.Image || product.image || product.ImageUrl || product.imageUrl ||
+                            `https://images.unsplash.com/photo-${1500000000000 + (id * 100000)}?w=500&auto=format&fit=crop&q=60`
+                    };
+                });
+
+                setProducts(optimizedProducts);
+            } catch (e) {
+                console.error("Lỗi tải sản phẩm:", e);
+            }
+
+            // 2. Lấy bài viết (Post)
+            try {
+                const postsRes = await postService.getAll();
+                const postsData = postsRes.data || [];
+
+                const baseUrl = process.env.REACT_APP_IMAGE_BASE_URL || 'https://localhost:7076';
+
+                const optimizedPosts = postsData.map((post) => {
+                    const id = post.Id || post.id || 1;
+                    const rawImage = post.ImageUrl || post.imageUrl || '';
+
+                    let finalImage = `https://picsum.photos/id/${id + 20}/600/350`; // Default
+
+                    if (rawImage.startsWith('http')) {
+                        finalImage = rawImage;
+                    } else if (rawImage) {
+                        const cleanImgStr = rawImage.replace(/^\/?uploads\//, '');
+                        finalImage = `${baseUrl}/uploads/${cleanImgStr}`;
+                    }
+
+                    return {
+                        ...post,
+                        ImageUrl: finalImage
+                    };
+                });
+
+                setPosts(optimizedPosts);
+            } catch (e) {
+                console.error("Lỗi tải bài viết:", e);
+            }
+
+            // Lấy danh mục sản phẩm (Category)
+           try {
+                const catRes = await categoryService.getAll();
+                const catData = catRes.data || catRes;
+                
+                // ĐÃ SỬA: Ưu tiên lấy c.name trước theo đúng log của bạn
+                const categoryNames = ["Tất cả", ...catData.map(c => c.name || c.Name)];
+                setCategories(categoryNames);
+            } catch (e) {
+                console.error("Lỗi tải danh mục:", e);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // --- LOGIC LỌC SẢN PHẨM MỚI NHẤT ---
+    // Sắp xếp mảng products theo ID giảm dần (mới nhất lên đầu) và lấy 5 sản phẩm đầu tiên
+    const newestProducts = [...products]
+        .sort((a, b) => (b.Id || b.id || 0) - (a.Id || a.id || 0))
+        .slice(0, 3);
+
+ // LOGIC LỌC: Bọc lót mọi trường hợp chữ Hoa/Thường từ C# trả về
     const filteredProducts = activeCategory === "Tất cả"
-        ? mockProducts
-        : mockProducts.filter(product => product.category === activeCategory);
+        ? products
+        : products.filter(p => {
+            // Lấy tên danh mục của sản phẩm ra (Hỗ trợ cả trường hợp C# lồng object CategoryProduct)
+            const catNameOfProduct = p.CategoryProduct?.Name || p.categoryProduct?.name || p.categoryName || p.CategoryName;
+            
+            return catNameOfProduct === activeCategory;
+        });
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     return (
         <main className="flex-1 flex flex-col w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter pb-24 md:pb-12 pt-stack-sm md:pt-stack-md">
-            
             <HeroBanner />
+            
+            {/* --- KHU VỰC 1: SẢN PHẨM MỚI NHẤT --- */}
+            {newestProducts.length > 0 && (
+                <div className="mb-12">
+                    {/* Tái sử dụng ProductGrid, truyền chữ cứng vào để đổi Title */}
+                    <ProductGrid
+                        products={newestProducts}
+                        currentCategoryName="SẢN PHẨM MỚI NHẤT" 
+                    />
+                </div>
+            )}
 
-            {/* 3. Truyền activeCategory và hàm thay đổi state xuống Menu */}
-            <CategoryMenu 
-                activeCategory={activeCategory} 
-                onCategoryChange={setActiveCategory} 
-            />
+            {/* --- KHU VỰC 2: SẢN PHẨM NỔI BẬT (CÓ LỌC DANH MỤC) --- */}
+            <div className="border-t border-outline-variant pt-8">
+                <CategoryMenu categories={categories} activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
 
-            {/* 4. Truyền danh sách sản phẩm đã lọc và tên danh mục hiện tại xuống Grid */}
-            <ProductGrid 
-                products={filteredProducts} 
-                currentCategoryName={activeCategory}
-            />
+                {filteredProducts.length === 0 ? (
+                    <div className="text-center py-20 text-xl text-gray-500">Không tìm thấy sản phẩm!</div>
+                ) : (
+                    <>
+                        <ProductGrid
+                            products={currentProducts}
+                            currentCategoryName={activeCategory} // TRUYỀN DÒNG NÀY ĐỂ TITLE ĐỘNG
+                        />
+                        
+                        {/* Nút phân trang */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center gap-2 my-8">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                                    <button 
+                                        key={n} 
+                                        onClick={() => setCurrentPage(n)} 
+                                        className={`px-4 py-2 rounded font-bold transition-colors ${currentPage === n ? 'bg-primary text-white shadow-md' : 'bg-surface-container hover:bg-primary-container text-on-surface'}`}
+                                    >
+                                        {n}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
 
-            <LatestBlog posts={mockPosts} />
-
+            <LatestBlog posts={posts} />
         </main>
     );
 }

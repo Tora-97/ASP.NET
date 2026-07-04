@@ -1,0 +1,33 @@
+﻿using CMS.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+
+namespace CMS.Backend.Controllers
+{
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [Authorize(Roles = "Admin")]
+    public class CustomerController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public CustomerController(ApplicationDbContext context) => _context = context;
+
+        public IActionResult Index()
+        {
+            var customers = _context.Customers.OrderByDescending(c => c.Id).ToList();
+            return View(customers);
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var customer = _context.Customers.Find(id);
+            if (customer != null)
+            {
+                _context.Customers.Remove(customer);
+                _context.SaveChanges();
+            }
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

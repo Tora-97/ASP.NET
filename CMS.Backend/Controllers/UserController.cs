@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Authorize(Roles = "Admin")] // Chỉ tài khoản có Role là Admin mới được phép vào
     public class UserController : Controller
     {

@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace CMS.Backend.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
